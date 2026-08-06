@@ -43,13 +43,37 @@ Alternative design modes are documented in `03_frontend_and_ui_ux/03_alternative
 
 ---
 
+## PRODUCTION PRINCIPLES (Standing Directives)
+
+These principles apply to ALL projects and override default behavior:
+
+### Durable-by-Default
+State stored only in process memory (Maps, arrays, module-level variables) is wiped on every server restart or deploy. **Anything that must survive a restart MUST live in a durable store (DB, Redis).** RAM-only is acceptable only as a cache in front of a durable store.
+
+### Blast-Radius Thinking
+Before changing any shared helper, count how many callers it has. A one-line change to a function with 50 importers is a HIGH-RISK change. **Judge change risk by callers, not by file count.**
+
+### Adversarial Review Discipline
+The context that produced a diff already believes it is correct — that belief is the bias review exists to defeat. **Never self-review in the authoring context.** Use the `adversarial-review` skill before every merge.
+
+### Supply-Chain Security
+**All projects MUST include `min-release-age=7` in `.npmrc`.** This prevents compromised packages (published then yanked within hours) from entering lockfiles.
+
+### Fix All, Not One
+When a bug or pattern is found, grep the whole codebase. **One fixed call site with untouched siblings is a regression waiting to be rediscovered.**
+
+### Shrink, Don't Layer
+Fixes should make the system simpler. **Prefer removing or consolidating code over adding a new flag, layer, or special case.**
+
+---
+
 ## WHEN IN DOUBT
 
 - **If unsure about a design choice →** Default to Editorial Minimalism.
 - **If unsure about a security practice →** Choose the more restrictive option.
 - **If unsure about data handling →** NEVER mutate or delete; prefer soft operations.
 - **If unsure about architecture →** Choose the simpler, more decoupled option.
-- **If unsure about a library choice →** Prefer zero-dependency or well-maintained options.
+- **If unsure about a library choice →** Use the `tech-evaluator` skill to research before choosing.
 - **If a rule is not covered →** Ask the human operator before proceeding.
 
 ---
@@ -59,9 +83,12 @@ Alternative design modes are documented in `03_frontend_and_ui_ux/03_alternative
 - **NEVER** allow any single file to exceed 200 lines of code.
 - **NEVER** ship hardcoded mock data. All dynamic content MUST come from a database.
 - **NEVER** expose API keys, service tokens, or secrets to the client-side bundle.
+- **NEVER** store critical state in process memory for multi-instance services.
 - **ALWAYS** implement explicit loading states, empty states, and error states.
-- **ALWAYS** use typed database clients and strict validation schemas.
+- **ALWAYS** use typed database clients and strict validation schemas (Zod, Pydantic, etc.).
 - **ALWAYS** run strict type-checking (`tsc --noEmit` or equivalent) before declaring a feature complete.
+- **ALWAYS** run the `adversarial-review` skill before merging any feature to main.
+- **ALWAYS** include `min-release-age=7` in `.npmrc` for all new projects.
 
 ---
 
@@ -69,9 +96,54 @@ Alternative design modes are documented in `03_frontend_and_ui_ux/03_alternative
 
 Rules in this library are **framework-agnostic**. Parenthetical tool references (e.g., Prisma, Zustand, React Query) are preferred examples, not mandates. Adapt to the current project's stack while preserving the architectural principle.
 
+When choosing technology, use the `ai-skills/tech-evaluator` skill — it searches the internet for current benchmarks, security advisories, and community health before recommending.
+
 ---
 
-## FILE INDEX
+## AI SKILLS (Executable AI Tools)
+
+The `ai-skills/` directory contains executable AI skills — specialized prompts that give an AI agent
+superpowers for specific tasks. Load the relevant skill when the task applies.
+
+| Skill | When to use |
+|---|---|
+| [`ai-skills/tumaal-audit/`](./ai-skills/tumaal-audit/SKILL.md) | Audit any codebase against the Tumaal benchmark |
+| [`ai-skills/tech-evaluator/`](./ai-skills/tech-evaluator/SKILL.md) | Research & choose the right technology |
+| [`ai-skills/adversarial-review/`](./ai-skills/adversarial-review/SKILL.md) | Break-it code review before any merge |
+| [`ai-skills/scale-stress-test/`](./ai-skills/scale-stress-test/SKILL.md) | Stress-test architecture at 1M+ users |
+| [`ai-skills/hidden-bug-hunter/`](./ai-skills/hidden-bug-hunter/SKILL.md) | Find race conditions, silent failures, data loss |
+
+---
+
+## CLI TOOLING
+
+### `packages/create-tumaal-app` — Project Scaffolding
+
+Scaffold a new production-grade monorepo in minutes:
+
+```bash
+# From the Tumaal Skills Library root:
+cd packages/create-tumaal-app
+pnpm install
+pnpm dev
+
+# Or once published:
+pnpm create tumaal-app
+```
+
+The wizard asks 6 questions and generates:
+- Complete pnpm + Turborepo monorepo
+- Hono API with Zod env validation, CORS allowlist, security headers, JWT auth
+- Next.js 15 App Router frontend
+- Shared packages (schemas, eslint-config, database)
+- 5-stage GitHub Actions CI (lint → type-check → test → build → security)
+- Scheduled security scan + Dependabot for all workspaces
+- `.npmrc` with `min-release-age=7` (supply-chain cooldown)
+- `SKILLS.md` architect decision template
+
+---
+
+## FILE INDEX (`knowledge-base/`)
 
 ### `01_system_design_and_architecture/`
 | File | Scope |

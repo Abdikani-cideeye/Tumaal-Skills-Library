@@ -1,0 +1,27 @@
+{
+  "name": "create-tumaal-app",
+  "version": "1.0.0",
+  "description": "Interactive CLI wizard to scaffold production-grade Tumaal monorepos.",
+  "bin": {
+    "create-tumaal-app": "./dist/index.js"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "picocolors": "^1.1.1",
+    "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/prompts": "^2.4.9",
+    "tsx": "^4.19.0",
+    "typescript": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
