@@ -134,6 +134,10 @@ Check every item. A missing item at this phase is a CRITICAL or HIGH finding.
 - [ ] Are deployment previews generated for pull requests?
 - [ ] Is there a documented rollback mechanism?
 - [ ] Is the main branch protected (requires passing CI + review before merge)?
+- [ ] **[IMPORT ORDER]** Does the Lint step enforce `import/order` and `consistent-type-imports`?
+  - Verify the ESLint config includes these rules.
+  - A single out-of-order import blocks the entire pipeline — this is a HIGH-frequency CI failure cause.
+  - If the project uses a monorepo, confirm `pnpm turbo lint` covers ALL packages, not just the root.
 
 ---
 
@@ -147,6 +151,11 @@ Check every item. A missing item at this phase is a CRITICAL or HIGH finding.
 - [ ] Are there TODO/FIXME comments in production code?
 - [ ] Are unused exports, dead functions, or commented-out code present?
 - [ ] Is `console.log` present in production hot paths? (Synchronous I/O blocks the event loop under load)
+- [ ] **[IMPORT ORDER — PRE-FLIGHT CHECK]** Are imports in all modified files strictly ordered?
+  - Required group order: `builtin → external → internal monorepo → internal alias → type-only`
+  - Blank line MUST separate each group.
+  - Within the same module, value imports MUST precede `import type` statements.
+  - **Standing AI Directive:** Never declare a task complete without running `pnpm --filter <pkg> lint --fix` (or `pnpm turbo lint -- --fix` for the whole repo) on every modified package. Verify zero errors before committing. See `knowledge-base/09_tumaal_rules/05_pre_flight_linting_rule.md` for the full protocol.
 
 ---
 

@@ -165,6 +165,24 @@ Test the diff against these inputs mentally:
 
 A fixed call site with untouched siblings is a regression waiting to be rediscovered.
 
+### Import Order Verification (standing check on every review)
+
+AI coding assistants routinely break CI by adding imports without respecting
+ESLint's `import/order` rules. Check every file in the diff:
+
+- [ ] Are imports grouped: `builtin → external → internal monorepo → internal alias → type-only`?
+- [ ] Is there a **blank line** between each group?
+- [ ] Within the same module, do **value imports come before** `import type` statements?
+
+If any violation is found:
+1. Flag it as a **Required Change** (it will break CI lint).
+2. Include the fix command: `pnpm --filter <pkg> lint --fix`
+3. Add a note: "Run `pnpm turbo lint` after fixing to verify zero errors."
+
+> **Standing reviewer directive:** Never issue a LGTM on a diff that has import
+> order violations. A green CI history does not excuse a file that will fail
+> lint after being touched again.
+
 ---
 
 ## Output Format
